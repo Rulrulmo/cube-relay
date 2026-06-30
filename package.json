@@ -1,0 +1,13 @@
+{
+  "name": "cube-relay",
+  "version": "0.1.0",
+  "description": "Zero-dependency, in-memory, portable relay broker (rulmo-relay /v0 compatible).",
+  "type": "module",
+  "bin": { "cube-relay": "broker.mjs" },
+  "scripts": {
+    "start": "node broker.mjs",
+    "test": "node test/contract.mjs"
+  },
+  "engines": { "node": ">=18" },
+  "license": "MIT"
+}
