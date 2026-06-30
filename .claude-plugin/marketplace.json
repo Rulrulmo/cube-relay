@@ -1,0 +1,22 @@
+{
+  "name": "cube-relay",
+  "metadata": {
+    "description": "cube-relay Claude Code plugin (live peer for the cube-relay broker)."
+  },
+  "owner": {
+    "name": "Rulrulmo",
+    "email": ""
+  },
+  "plugins": [
+    {
+      "name": "cube-relay",
+      "description": "Claude Code live peer for the cube-relay broker. Zero-dependency; needs only a broker URL + token.",
+      "author": {
+        "name": "Rulrulmo",
+        "email": ""
+      },
+      "source": "./plugins/cube-relay",
+      "category": "development"
+    }
+  ]
+}

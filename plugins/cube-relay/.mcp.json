@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "cube-relay": {
+      "type": "stdio",
+      "command": "${CLAUDE_PLUGIN_ROOT}/bin/cube-relay-mcp"
+    }
+  }
+}

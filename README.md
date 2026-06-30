@@ -13,12 +13,22 @@ CUBE_RELAY_TOKEN=<shared-secret> node broker.mjs
 # 옵션 env: PORT(기본 8787), CUBE_RELAY_WORKSPACE(기본 company-main), CUBE_RELAY_PEER_TTL_MS(기본 60000)
 ```
 
-## client 연결
-rulmo-relay client(`cr`)를 cube-relay로 향하게:
+## Claude Code 연결 (peer plugin)
+이 repo는 broker(`broker.mjs`)뿐 아니라 **Claude Code가 붙는 peer 플러그인**(`plugins/cube-relay/`)도 포함한다 — zero-dep MCP 서버 + launcher + skill.
+
+설정:
 ```bash
-RELAY_BASE_URL=http://<host>:8787 RULMO_RELAY_TOKEN=<shared-secret> cr ...
+# 1) 토큰 1회 등록 (또는 CUBE_RELAY_TOKEN env)
+mkdir -p ~/.config/cube-relay && printf '%s' '<shared-secret>' > ~/.config/cube-relay/token && chmod 600 ~/.config/cube-relay/token
+
+# 2) broker 위치 지정 (기본 http://127.0.0.1:8787)
+export CUBE_RELAY_BASE_URL=http://<host>:8787
 ```
-peer 이름/그룹은 기존대로 `RELAY_PEER_NAME` / `RELAY_PEER_GROUPS`로.
+- 플러그인 로드: `.claude-plugin/marketplace.json`을 통해 Claude Code 플러그인으로 설치(또는 dev-channel로 로드).
+- peer 이름/그룹: `CUBE_RELAY_PEER_NAME`(또는 `RELAY_PEER_NAME`) / `CUBE_RELAY_PEER_GROUPS`(또는 `RELAY_PEER_GROUPS`).
+- env는 `CUBE_RELAY_*`를 우선하고 기존 `RELAY_*`/`RULMO_RELAY_*`도 호환 수용한다.
+
+견고성: peer 서버는 init 직후 `tools/list_changed`를 한 번 쏴서 콜드스타트 시 툴 누락을 자동 복구하고, `uncaughtException`/`unhandledRejection`을 삼켜 프로세스가 죽지 않는다.
 
 ## /v0 계약 (client가 쓰는 엔드포인트)
 | 메서드·경로 | 요청 | 응답 |
