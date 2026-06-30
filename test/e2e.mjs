@@ -92,8 +92,23 @@ async function main() {
   ok(!!channelMsg, 'RAG receives a claude/channel notification');
   ok(channelMsg?.params?.content === 'ping-e2e', `channel content == "ping-e2e" (got "${channelMsg?.params?.content}")`);
   ok(channelMsg?.params?.meta?.source === 'cube-relay', 'channel meta.source == cube-relay');
+  ok(channelMsg?.params?.meta?.kind === 'request', 'incoming task meta.kind == request');
   ok(channelMsg?.params?.meta?.skill_name === 'planner-round', 'channel meta carries skill_name');
   ok(!!channelMsg?.params?.meta?.task_id, 'channel meta carries task_id');
+
+  // B: RAG completes the task → RC should get a peer-reply (result auto-delivered)
+  const taskId = channelMsg.params.meta.task_id;
+  const beforeRC = rc.notifications.length;
+  await rag.call('complete_task', { task_id: taskId, status: 'completed', summary: 'done-e2e' });
+  let reply = null;
+  for (let i = 0; i < 40; i++) {
+    reply = rc.notifications.slice(beforeRC).find(n => n.method === 'notifications/claude/channel' && n.params?.meta?.kind === 'peer-reply');
+    if (reply) break;
+    await sleep(100);
+  }
+  ok(!!reply, 'RC receives a peer-reply after RAG complete_task');
+  ok(reply?.params?.content === 'done-e2e', `peer-reply content == "done-e2e" (got "${reply?.params?.content}")`);
+  ok(reply?.params?.meta?.task_id === taskId, 'peer-reply correlates to original task_id');
 }
 
 main()

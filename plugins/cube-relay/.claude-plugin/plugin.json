@@ -1,7 +1,7 @@
 {
   "name": "cube-relay",
   "description": "Connect Claude Code as a live cube-relay peer via MCP. Broker URL/workspace via env (defaults to a local cube-relay broker); token entered once on the machine or supplied by env.",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "author": {
     "name": "Rulrulmo",
     "email": ""

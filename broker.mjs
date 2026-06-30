@@ -148,10 +148,19 @@ const server = createServer(async (req, res) => {
         if (m === 'POST' && parts[3] === 'heartbeat') { p.last_seen = now(); return send(res, 200, {}); }
       }
     }
-    // ---- /v0/tasks/:id/complete ----
+    // ---- /v0/tasks/:id/complete ----  (완료 시 결과를 원 요청자에게 peer-reply로 회신)
     if (parts[1] === 'tasks' && parts[3] === 'complete' && m === 'POST') {
       const t = w.tasks.get(parts[2]);
-      if (t) { t.status = String(body.status || 'completed'); t.summary = String(body.summary || ''); t.completed_at = now(); }
+      const status = String(body.status || 'completed');
+      const summary = String(body.summary || '');
+      if (t) {
+        t.status = status; t.summary = summary; t.completed_at = now();
+        const requester = t.from_id && w.peers.get(t.from_id);
+        if (requester && summary) requester.messages.push({
+          text: summary, task_id: t.task_id, from_id: t.to_peer_id, sent_at: new Date().toISOString(),
+          kind: 'peer-reply', status, role_name: '', skill_name: '', context_hash: '',
+        });
+      }
       return send(res, 200, {});
     }
     return send(res, 404, { error: 'not found' });

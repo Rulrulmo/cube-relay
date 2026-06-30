@@ -105,8 +105,9 @@ function buildChannelContent(m) {
   return m.text || '';
 }
 function pushChannelMessage(m, reason='poll') {
-  notify('notifications/claude/channel', { content: buildChannelContent(m), meta: { source:'cube-relay', task_id:m.task_id, from_id:m.from_id, sent_at:m.sent_at, role_name:m.role_name||'', skill_name:m.skill_name||'', context_hash:m.context_hash||'', peer_id:myId, cwd:CWD, retry_reason:reason } });
-  log(`Pushed relay task ${m.task_id} from ${m.from_id} (${reason})`);
+  const kind = m.kind || 'request';
+  notify('notifications/claude/channel', { content: buildChannelContent(m), meta: { source:'cube-relay', kind, task_id:m.task_id, from_id:m.from_id, sent_at:m.sent_at, role_name:m.role_name||'', skill_name:m.skill_name||'', context_hash:m.context_hash||'', status:m.status||'', peer_id:myId, cwd:CWD, retry_reason:reason } });
+  log(`Pushed relay ${kind === 'peer-reply' ? 'reply' : 'task'} ${m.task_id} from ${m.from_id} (${reason})`);
 }
 async function pollAndPushMessages() {
   if (!myId) {
@@ -182,7 +183,7 @@ async function cleanup(reason) {
 async function handle(msg) {
   if (!msg || msg.jsonrpc !== '2.0') return;
   if (msg.method === 'initialize') {
-    result(msg.id, { protocolVersion: msg.params?.protocolVersion || '2024-11-05', capabilities: { experimental: {'claude/channel':{}}, tools: { listChanged: true } }, serverInfo: { name:'cube-relay', version:'0.1.0' }, instructions: 'You are connected to the Cube Relay. Incoming <channel source="cube-relay" task_id="..." ...> messages are A2A requests for this live Claude Code session. Treat them like a coworker tapping you on the shoulder: respond immediately, preserve session context, and when finished call the MCP tool complete_task with the task_id from the channel attributes, status="completed" or "failed", and a concise Korean user-facing summary. For channel messages with kind="peer-reply", read them as informational replies and do not call complete_task unless explicitly asked for more work.' });
+    result(msg.id, { protocolVersion: msg.params?.protocolVersion || '2024-11-05', capabilities: { experimental: {'claude/channel':{}}, tools: { listChanged: true } }, serverInfo: { name:'cube-relay', version:'0.1.1' }, instructions: 'You are connected to the Cube Relay. Incoming <channel source="cube-relay" task_id="..." ...> messages are A2A requests for this live Claude Code session. Treat them like a coworker tapping you on the shoulder: respond immediately, preserve session context, and when finished call the MCP tool complete_task with the task_id from the channel attributes, status="completed" or "failed", and a concise Korean user-facing summary. For channel messages with kind="peer-reply", read them as informational replies and do not call complete_task unless explicitly asked for more work.' });
     return;
   }
   if (msg.method === 'notifications/initialized') {

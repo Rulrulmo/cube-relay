@@ -61,8 +61,12 @@ async function main() {
   // queue drained
   ok((await api('GET', `/v0/peers/${RAG}/messages`)).body.messages.length === 0, 'message queue drained after poll');
 
-  // complete task
+  // complete task → 결과가 요청자(RC)에게 peer-reply로 회신되어야 함
   ok((await api('POST', `/v0/tasks/${TASK}/complete`, { status: 'completed', summary: 'done' })).status === 200, 'complete_task → 200');
+  const reply = await api('GET', `/v0/peers/${RC}/messages`);
+  ok(reply.body.messages.length === 1, 'complete_task가 요청자 큐에 회신 1건 넣음');
+  const rm = reply.body.messages[0] || {};
+  ok(rm.kind === 'peer-reply' && rm.text === 'done' && rm.task_id === TASK && rm.from_id === RAG, 'peer-reply: kind/summary/task_id/from 정확');
 
   // join/leave group
   ok((await api('POST', `/v0/peers/${RAG}/groups`, { group_name: 'g2' })).body.group_names.includes('g2'), 'join_group adds g2');
