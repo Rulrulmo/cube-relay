@@ -40,18 +40,18 @@ claude plugin marketplace add Rulrulmo/cube-relay
 claude plugin install cube-relay@cube-relay
 ```
 
-**② alias** (`~/.zshrc`) — 설치된 플러그인 서버를 relay 채널로 로드:
+**② 실행** — 플러그인 서버를 relay 채널로 로드하며 Claude Code를 띄운다:
 ```bash
-alias cr='command claude --dangerously-skip-permissions --dangerously-load-development-channels server:plugin:cube-relay:cube-relay'
+claude --dangerously-skip-permissions --dangerously-load-development-channels server:plugin:cube-relay:cube-relay
 ```
-> 채널 기능(받은 A2A를 세션에 푸시)은 `--dangerously-load-development-channels`가 필요하다. 원격 broker면 `CUBE_RELAY_BASE_URL=http://<host>:8787 cr`.
+> 채널 기능(받은 A2A를 세션에 푸시)은 `--dangerously-load-development-channels`가 필요하다. 원격 broker면 앞에 `CUBE_RELAY_BASE_URL=http://<host>:8787`. (자주 쓰면 alias로 묶어 쓰면 된다.)
 
 **③ 토큰** (broker와 동일, 없으면):
 ```bash
 mkdir -p ~/.config/cube-relay && printf '%s' 'YOUR_TOKEN' > ~/.config/cube-relay/token && chmod 600 ~/.config/cube-relay/token
 ```
 
-**④ 사용** — `cr`로 세션을 띄우고 슬래시 커맨드:
+**④ 사용** — 위 명령으로 띄운 세션에서 슬래시 커맨드:
 ```
 /register RC mygroup     # 이름 + 그룹 등록
 /peers                   # 같은 그룹 피어 목록
@@ -59,7 +59,7 @@ mkdir -p ~/.config/cube-relay && printf '%s' 'YOUR_TOKEN' > ~/.config/cube-relay
 "worker에게 'API 리뷰해줘' 보내줘"   # 자연어 → send_to_peer_name
 /unregister              # 그룹에서 빠지기
 ```
-자동 부팅(스크립트)에선 슬래시 대신 env로: `RELAY_PEER_NAME=RC RELAY_PEER_GROUPS=g cr`.
+스크립트 자동 부팅에선 슬래시 대신 env로 이름·그룹 지정: 실행 명령 앞에 `RELAY_PEER_NAME=RC RELAY_PEER_GROUPS=g`.
 
 ---
 
