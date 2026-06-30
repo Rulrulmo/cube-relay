@@ -32,22 +32,37 @@ launchctl print gui/$(id -u)/work.rulrulmo.cube-relay | grep state
 tail -f ~/Library/Logs/cube-relay.log
 ```
 
-## 3. Claude Code에서 실행 (MCP 서버 등록)
+## 3. Claude Code에서 실행
 
-peer를 **MCP 서버로 등록**한다 — `claude plugin install`이 아니라 `claude mcp add`다. relay의 채널 기능(받은 A2A를 세션에 푸시)은 이 등록을 `--dangerously-load-development-channels server:<name>`으로 로드해야 켜지기 때문. (`<DIR>` = 이 repo 클론 경로)
+relay의 **채널 기능**(받은 A2A를 세션에 푸시)은 peer를 `--dangerously-load-development-channels`로 로드해야 켜진다. 그래서 `claude plugin install`만으론 부족하고, peer launcher를 **dev-channel용 MCP 서버로 등록**해야 한다(`claude mcp add`). 처음 쓰는 사람도 repo clone 없이 가능:
+
+**① peer launcher 확보 — 둘 중 하나**
 ```bash
-claude mcp add cube-relay-dev --scope user -e CUBE_RELAY_BASE_URL=http://127.0.0.1:8787 \
-  -- <DIR>/plugins/cube-relay/bin/cube-relay-mcp
-claude mcp get cube-relay-dev          # Status: ✔ Connected 확인
+# (권장) 플러그인 설치 — clone 불필요. broker 없는 기기에서 peer만 붙일 때도 OK
+claude plugin marketplace add Rulrulmo/cube-relay
+claude plugin install cube-relay@cube-relay
+LAUNCHER="$(ls ~/.claude/plugins/cache/cube-relay/cube-relay/*/bin/cube-relay-mcp | sort -V | tail -1)"
+
+# (또는) 이 repo를 clone한 기기라면
+LAUNCHER="$(pwd)/plugins/cube-relay/bin/cube-relay-mcp"
 ```
-relay 채널을 로드하는 alias(`~/.zshrc`):
+
+**② MCP 서버로 등록 + 토큰 + alias**
 ```bash
+# 토큰(broker와 동일) — 없으면
+mkdir -p ~/.config/cube-relay && printf '%s' 'YOUR_TOKEN' > ~/.config/cube-relay/token && chmod 600 ~/.config/cube-relay/token
+
+claude mcp add cube-relay-dev --scope user -e CUBE_RELAY_BASE_URL=http://127.0.0.1:8787 -- "$LAUNCHER"
+claude mcp get cube-relay-dev          # Status: ✔ Connected 확인
+
+# ~/.zshrc — 이 서버를 relay 채널로 로드하는 alias
 alias cr='command claude --dangerously-skip-permissions --dangerously-load-development-channels server:cube-relay-dev'
 ```
-이제 `cr`로 띄운 세션에서:
+원격/다른 기기의 broker면 등록 시 `CUBE_RELAY_BASE_URL`을 그 주소로.
+
+**③ 사용** — `cr`로 띄운 세션에서:
 - 피어 이름·그룹은 env로 지정: `RELAY_PEER_NAME=RC RELAY_PEER_GROUPS=mygroup cr`
-- 세션 안에서 MCP 툴 사용: `relay_status`(상태), `list_peers`(같은 그룹 피어), `send_to_peer_name`(A2A 전송), `check_messages`, `complete_task`(태스크 완료), `join_group`/`change_group` 등.
-- 원격/다른 기기의 broker면 등록 시 `CUBE_RELAY_BASE_URL`을 그 주소로.
+- 세션 안 MCP 툴: `relay_status`, `list_peers`, `send_to_peer_name`(A2A 전송), `check_messages`, `complete_task`, `join_group`/`change_group`.
 
 ---
 
