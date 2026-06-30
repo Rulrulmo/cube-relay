@@ -32,9 +32,9 @@ launchctl print gui/$(id -u)/work.rulrulmo.cube-relay | grep state
 tail -f ~/Library/Logs/cube-relay.log
 ```
 
-## 3. Claude Code에서 실행 (플러그인 설치)
+## 3. Claude Code에서 실행 (MCP 서버 등록)
 
-peer 플러그인을 MCP 서버로 등록(`<DIR>` = 이 repo 클론 경로):
+peer를 **MCP 서버로 등록**한다 — `claude plugin install`이 아니라 `claude mcp add`다. relay의 채널 기능(받은 A2A를 세션에 푸시)은 이 등록을 `--dangerously-load-development-channels server:<name>`으로 로드해야 켜지기 때문. (`<DIR>` = 이 repo 클론 경로)
 ```bash
 claude mcp add cube-relay-dev --scope user -e CUBE_RELAY_BASE_URL=http://127.0.0.1:8787 \
   -- <DIR>/plugins/cube-relay/bin/cube-relay-mcp
