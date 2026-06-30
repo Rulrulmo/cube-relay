@@ -10,7 +10,20 @@
 ## 실행
 ```bash
 CUBE_RELAY_TOKEN=<shared-secret> node broker.mjs
+# 토큰은 env 없으면 ~/.config/cube-relay/token 파일에서도 읽는다(peer와 공유).
 # 옵션 env: PORT(기본 8787), CUBE_RELAY_WORKSPACE(기본 company-main), CUBE_RELAY_PEER_TTL_MS(기본 60000)
+```
+
+## macOS 서비스 (launchd — 상시 가동 + 자동 재시작)
+로그인 시 자동 시작 + **죽으면 KeepAlive로 자동 재시작**. 토큰은 `~/.config/cube-relay/token`에서 읽으므로 plist에 시크릿이 안 박힌다.
+```bash
+# 토큰 먼저 (없으면)
+mkdir -p ~/.config/cube-relay && printf '%s' 'YOUR_TOKEN' > ~/.config/cube-relay/token && chmod 600 ~/.config/cube-relay/token
+service/install-macos.sh          # 설치 + 즉시 기동 (PORT env로 포트 변경 가능)
+service/uninstall-macos.sh        # 중지 + 제거
+# 상태/로그
+launchctl print gui/$(id -u)/work.rulrulmo.cube-relay | grep state
+tail -f ~/Library/Logs/cube-relay.log
 ```
 
 ## Claude Code 연결 (peer plugin)

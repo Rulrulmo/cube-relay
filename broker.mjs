@@ -6,9 +6,18 @@
 // peers re-register automatically on their next heartbeat/poll (404 → re-register).
 import { createServer } from 'node:http';
 import { randomUUID } from 'node:crypto';
+import { readFileSync } from 'node:fs';
+import { homedir } from 'node:os';
 
 const PORT = Number(process.env.PORT || process.env.CUBE_RELAY_PORT || 8787);
-const TOKEN = process.env.CUBE_RELAY_TOKEN || process.env.RULMO_RELAY_TOKEN || '';
+// Token: env first, else the shared token file (~/.config/cube-relay/token) — same file
+// the peer launcher uses, so broker + peers always agree without embedding secrets in a plist.
+function resolveToken() {
+  const env = process.env.CUBE_RELAY_TOKEN || process.env.RULMO_RELAY_TOKEN || '';
+  if (env) return env;
+  try { return readFileSync(`${process.env.XDG_CONFIG_HOME || `${homedir()}/.config`}/cube-relay/token`, 'utf8').trim(); } catch { return ''; }
+}
+const TOKEN = resolveToken();
 const DEFAULT_WORKSPACE = process.env.CUBE_RELAY_WORKSPACE || 'company-main';
 const PEER_TTL_MS = Number(process.env.CUBE_RELAY_PEER_TTL_MS || 60000); // > client heartbeat(15s)
 const PRUNE_INTERVAL_MS = 15000;
